@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_1.xsd"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" 
+    jaxb:extensionBindingPrefixes="xjc"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:annox="http://annox.dev.java.net"
+    version="2.1">
+
+    <!--
+        this bindig file setts some additional cnfigurations how the xml file is 
+        converted into JAXB objects
+    --> 
+    
+    <jaxb:globalBindings>
+        <!-- setting the right converter vor time elements -->
+        <jaxb:javaType name="java.time.LocalTime" xmlType="xs:time"
+                       parseMethod="de.mathplan.recruitingtest.converter.TimeConverter.parseDate"
+                       printMethod="de.mathplan.recruitingtest.converter.TimeConverter.printDate"/>
+        <xjc:superClass name="de.mathplan.recruitingtest.model.Base" />
+    </jaxb:globalBindings>
+    <!-- Annotate the following classes with XmlRootElement -->
+    <jaxb:bindings schemaLocation="timetable.xsd" node="/xs:schema">
+        <jaxb:bindings node="xs:complexType[@name='university']">
+            <annox:annotate>
+                <annox:annotate annox:class="javax.xml.bind.annotation.XmlRootElement" name="university" />
+            </annox:annotate>
+        </jaxb:bindings>
+    </jaxb:bindings>
+</jaxb:bindings>
+
+
+
+
+
+

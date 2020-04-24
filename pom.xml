@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.mycompany</groupId>
+    <artifactId>mathplan-recruitingtest</artifactId>
+    <version>1.0</version>
+    <dependencies>
+        <!-- javatuples -->
+        <dependency>
+            <groupId>org.javatuples</groupId>
+            <artifactId>javatuples</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <!-- API, java.xml.bind module -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+
+        <!-- Runtime, com.sun.xml.bind module -->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+    </dependencies>
+    <packaging>jar</packaging>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+    
+    
+    <build>
+        <plugins>
+            <plugin>
+                <!-- Build an executable JAR -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>de.mathplan.recruitingtest.ConflictFinder</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <!-- plugin to automatically generate the JAXB classes from the xml-schema -->
+            <plugin>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-xjc-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>xsdtojava</goal>
+                        </goals>
+                        <configuration>
+                            <sourceRoot>${basedir}/target/generated-sources/jaxb</sourceRoot>
+                            <xsdOptions>
+                                <xsdOption>
+                                    <xsd>src/main/resources/timetable.xsd</xsd> 
+                                    <packagename>de.mathplan.recruitingtest.model</packagename>
+                                    <bindingFile>src/main/resources/timetable.xjb</bindingFile>
+                                    <extension>true</extension>
+                                    <extensionArgs>
+                                        <extensionArg>-Xxew</extensionArg>    
+                                        <extensionArg>-Xannotate</extensionArg>    
+                                    </extensionArgs>
+                                </xsdOption>
+                            </xsdOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.github.jaxb-xew-plugin</groupId>
+                        <artifactId>jaxb-xew-plugin</artifactId>
+                        <version>1.9</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jvnet.jaxb2_commons</groupId>
+                        <artifactId>jaxb2-basics-annotate</artifactId>
+                        <version>1.0.4</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+</project>

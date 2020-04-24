@@ -1,0 +1,10 @@
+de/mathplan/recruitingtest/model/Conflict.class
+de/mathplan/recruitingtest/model/Booking.class
+de/mathplan/recruitingtest/model/Curriculum.class
+de/mathplan/recruitingtest/model/University.class
+de/mathplan/recruitingtest/model/Base.class
+de/mathplan/recruitingtest/ConflictFinder.class
+de/mathplan/recruitingtest/model/Lecture.class
+de/mathplan/recruitingtest/converter/TimeConverter.class
+de/mathplan/recruitingtest/model/Adapter1.class
+de/mathplan/recruitingtest/model/ObjectFactory.class
