@@ -113,6 +113,8 @@ public class SelfBalancingBinarySearchTree {
         y.left = z;
         updateHeight(y);
         updateHeight(x);
+        updateMax(x);
+        updateMax(y);
         return x;
     }
 
@@ -123,7 +125,25 @@ public class SelfBalancingBinarySearchTree {
         y.right = z;
         updateHeight(y);
         updateHeight(x);
+        updateMax(y);
+        updateMax(x);
         return x;
+    }
+
+    void updateMax(Node n){
+        int result = n.getBooking().getEndTime().getHour();
+        if (n.left != null) {
+            if (n.left.getMax() > result) {
+                result = n.left.getMax();
+            }
+        }
+        if (n.right != null) {
+            if (n.right.getMax() > result) {
+                result = n.right.getMax();
+            }
+        }
+        n.setMax(result);
+
     }
 
     public Node rebalance(Node z) {
@@ -154,12 +174,18 @@ public class SelfBalancingBinarySearchTree {
         if (node == null) {
             return new Node(booking, curriculum);
         } else if (node.booking.getStartTime().getHour() >= booking.getStartTime().getHour()) {
+            if (node.max <= booking.endTime.getHour()){
+                node.setMax(booking.endTime.getHour());
+            }
             node.left = insert(node.left, booking, curriculum);
-        } else {
+        }
+        else {
+            if (node.max <= booking.endTime.getHour()){
+                node.setMax(booking.endTime.getHour());
+            }
             node.right = insert(node.right, booking, curriculum);
         }
-
-        return node;
+        return rebalance(node);
     }
 
     public Node delete(Node node, Booking booking) {
@@ -169,7 +195,8 @@ public class SelfBalancingBinarySearchTree {
         else if (node.booking.equals(booking)) {
             if (node.left == null || node.right == null) {
                 node = (node.left == null) ? node.right : node.left;
-            } else {
+            }
+            else {
                 Node mostLeftChild = mostLeftChild(node.right);
                 node.booking = mostLeftChild.booking;
                 node.curriculum = mostLeftChild.curriculum;
@@ -185,7 +212,7 @@ public class SelfBalancingBinarySearchTree {
 
         if (node != null) {
             node = rebalance(node);
-            node.max = findMax(node);
+            updateMax(node);
         }
         return node;
     }
@@ -239,24 +266,32 @@ public class SelfBalancingBinarySearchTree {
         List<Conflict> conflicts = new ArrayList<>();
         Node helper = root;
         while (helper != null) {
+//            System.out.println(booking.getStartTime() + " " + booking.getEndTime()  + " " +
+//                    booking.getRoom()+ " " +booking.getWeekday() +" -- " +
+//                    helper.getBooking().getStartTime() + " " + helper.getBooking().getEndTime()+
+//                    " "+ helper.getBooking().getRoom()+ " " +helper.getBooking().getWeekday()  );
+
             if (doesOverlap(helper, booking, curriculum) == 0) {
+//                System.out.println(0);
                 if (helper.left != null && helper.left.max > booking.getStartTime().getHour()) {
                     helper = helper.left;
                 } else
                     helper = helper.right;
 
             } else if (doesOverlap(helper, booking, curriculum) == 1) {
+//                System.out.println(1);
                 conflicts.add(new Conflict("Curricular Conflict", booking, helper.booking));
                 if (helper.left != null && helper.left.max > booking.getStartTime().getHour()) {
                     helper = helper.left;
                 } else helper = helper.right;
             } else if (doesOverlap(helper, booking, curriculum) == 2) {
-
+//                System.out.println(2);
                 conflicts.add(new Conflict("Room Conflict", booking, helper.booking));
                 if (helper.left != null && helper.left.max > booking.getStartTime().getHour()) {
                     helper = helper.left;
                 } else helper = helper.right;
             } else if (doesOverlap(helper, booking, curriculum) == 3) {
+//                System.out.println(3);
                 conflicts.add(new Conflict("Curricular Conflict", booking, helper.booking));
                 conflicts.add(new Conflict("Room Conflict", booking, helper.booking));
                 if (helper.left != null && helper.left.max > booking.getStartTime().getHour()) {
@@ -270,10 +305,20 @@ public class SelfBalancingBinarySearchTree {
     public void inorder(Node r) {
         if (r != null) {
             inorder(r.left);
-            System.out.print(r.curriculum + " ");
+            System.out.print("( "+ (r.left!=null ? r.left.getBooking().getWeekday() : " ")+ "---" + r.getBooking().getWeekday() + ": " + r.max +", "+r.getBooking().getEndTime() +"---"
+                    +(r.right!=null ? r.right.getBooking().getWeekday() : " ")+" )");
+
             inorder(r.right);
         }
     }
+    public void inorderr(Node r) {
+        if (r != null) {
+            inorderr(r.left);
+            System.out.print("( "+r.getLeft()+" " + r.getBooking().getWeekday() + ": " + r.booking.endTime + " )");
+            inorderr(r.right);
+        }
+    }
+
 
 
 }

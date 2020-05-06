@@ -1,13 +1,11 @@
 package de.mathplan.recruitingtest;
 
-import de.mathplan.recruitingtest.model.*;
+import de.mathplan.recruitingtest.model.Booking;
+import de.mathplan.recruitingtest.model.Conflict;
+import de.mathplan.recruitingtest.model.SelfBalancingBinarySearchTree;
+import de.mathplan.recruitingtest.model.University;
+import org.xml.sax.SAXException;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -15,10 +13,14 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import org.xml.sax.SAXException;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- *
  * @author hoener
  */
 public class ConflictFinder {
@@ -34,30 +36,42 @@ public class ConflictFinder {
         System.out.println("read " + UNIVERSITY_XML + " successfully");
 
 
-
+//      Hashmap to store (booking, curriculum) as (key, value) where curriculum.
+//      Is the curriculum to which the booking belongs.
         HashMap<Booking, String> bookingCurriculum = new HashMap<Booking, String>();
-//      An Interval tree to store all the bookings
+
+//      Hashmap to store (weekday, tree) as (key, value) where tree is
+//      the tree that stors all the booking on that particular day.
+        HashMap<String, SelfBalancingBinarySearchTree> weekdayTree = new HashMap<String, SelfBalancingBinarySearchTree>();
+
 
         uni.getCurricula().forEach(curriculum -> curriculum.getLecture()
-        .forEach( lectureJAXBElement -> lectureJAXBElement.getValue().getRoombookings()
-        .forEach(booking -> bookingCurriculum.put(booking, curriculum.getName()))));
+                .forEach(lectureJAXBElement -> lectureJAXBElement.getValue().getRoombookings()
+                        .forEach(booking ->
+                            bookingCurriculum.put(booking, curriculum.getName()))));
 
-        SelfBalancingBinarySearchTree selfBalancingBinarySearchTree = new SelfBalancingBinarySearchTree();
+
         uni.getLectures()
                 .forEach(lecture -> lecture.getRoombookings()
-                .forEach(booking -> {
-                            selfBalancingBinarySearchTree.insertRec(booking, bookingCurriculum.get(booking));
-                        }
-                ));
+                        .forEach(booking -> {
+                            if (weekdayTree.get(booking.getWeekday()) == null) {
+                                weekdayTree.put(booking.getWeekday(), new SelfBalancingBinarySearchTree());
+                            }
+                            weekdayTree.get(booking.getWeekday()).insertRec(booking, bookingCurriculum.get(booking));
+                                }
+                        ));
 
 
         List<Conflict> conflicts = new ArrayList<>();
         uni.getLectures()
                 .forEach(lecture -> lecture.getRoombookings()
-                .forEach(booking -> {
-                    conflicts.addAll(selfBalancingBinarySearchTree.findOverlappingIntervals(selfBalancingBinarySearchTree.getRoot(), booking,
-                        bookingCurriculum.get(booking)));
-                }
+                        .forEach(booking -> {
+                            SelfBalancingBinarySearchTree tree =  weekdayTree.get(booking.getWeekday());
+                                    conflicts.addAll(tree.findOverlappingIntervals(tree.getRoot(), booking,
+                                            bookingCurriculum.get(booking)));
+                                    tree.delete(tree.getRoot(), booking);
+                                    weekdayTree.put(booking.getWeekday(), tree);
+                                }
                         ));
         conflicts.forEach(
                 conflict ->
@@ -67,6 +81,9 @@ public class ConflictFinder {
                                 bookingCurriculum.get(conflict.getB2())+ " " + conflict.getB2().getRoom() + " :  " + conflict.getName()
                         + "  On " + conflict.getB1().getWeekday())
         );
+
+//        selfBalancingBinarySearchTree.inorder(selfBalancingBinarySearchTree.getRoot());
+//        System.out.println();
 
     }
 
